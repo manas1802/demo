@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useTable, useSortBy, useGlobalFilter } from "react-table";
 import sample_data from './sample_data.json';
 import { COLUMNS } from './columns';
@@ -14,8 +14,9 @@ function globalFilter(rows, columnIds, filterValue) {
 }
 
 export const FilteringTable = () => {
-    const columns = useMemo(() => COLUMNS, []);
+    const [columns, setColumns] = useState(COLUMNS);
     const data = useMemo(() => sample_data, []);
+    const [grouping, setGrouping] = useState('');
 
     const {
         getTableProps,
@@ -36,9 +37,41 @@ export const FilteringTable = () => {
         useSortBy
     );
 
+    const applyGrouping = (option) => {
+        if (option === 'category' || option === 'subcategory') {
+            const newColumns = [
+                ...columns.filter(column => column.accessor === option),
+                ...columns.filter(column => column.accessor !== option)
+            ];
+            setColumns(newColumns);
+            setGrouping(option);
+        }
+    };
+
+    const removeGrouping = () => {
+        setColumns(COLUMNS);
+        setGrouping('');
+    };
+
+    useEffect(() => {
+        if (grouping) {
+            rows.sort((a, b) => {
+                const aValue = a.values[grouping];
+                const bValue = b.values[grouping];
+                return aValue > bValue ? 1 : -1;
+            });
+        }
+    }, [grouping, rows]);
+
     return (
         <>
-            <GlobalFilter globalFilter={state.globalFilter} setGlobalFilter={setGlobalFilter} />
+            <GlobalFilter
+                globalFilter={state.globalFilter}
+                setGlobalFilter={setGlobalFilter}
+                handleSortChange={applyGrouping}
+                applyGrouping={applyGrouping}
+                removeGrouping={removeGrouping}
+            />
             <table {...getTableProps()} className="table">
                 <thead>
                     {headerGroups.map(headerGroup => (

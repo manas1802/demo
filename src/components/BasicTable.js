@@ -2,7 +2,7 @@ import React, {useMemo} from "react";
 import { useTable } from "react-table";
 import sample_data from './sample_data.json'
 import {COLUMNS} from './columns'
-import './table.css';
+import './table.css' ;
 
 
 export const BasicTable=() =>{
